@@ -8,10 +8,7 @@ type PoolDayData @entity {
   pool: Pool!
   # fees in USD
   feesUSD: BigDecimal!
-  # # fees in ETH
-  # feesETH: BigInt!
 }
-
 
 # Data accumulated and condensed into day stats for all of Uniswap
 type UniswapDayData @entity {
@@ -25,7 +22,31 @@ type UniswapDayData @entity {
   feesUSD: BigDecimal!
   # number of daily transactions
   txCount: BigInt!
+  #unique users count
+  uniqueUsersCount: Int!
+  uniqueTodayAccounts: [DayAccount!]! @derivedFrom(field: "dayId")
 }
+
+# Day + Account map
+type DayAccount @entity{
+  #(day number) + (account addr)
+  id: ID!
+  addr: String!
+  # # timestamp rounded to current day by dividing by 86400
+  # date: Int!
+  count: Int!
+  dayId: UniswapDayData!
+}
+
+# Day + Account + Pool map
+type DayAccountPool @entity{
+  #(day number) + (account addr) + (pool)
+  id: ID!
+  # timestamp rounded to current day by dividing by 86400
+  date: Int!
+  count: Int!
+}
+
 
 type Pool @entity {
   # pool address
@@ -82,6 +103,11 @@ type Token @entity {
   # pools token is in that are white listed for USD pricing
   stableCoinPools: [Pool!]!
 }
+
+# type User @entity{
+#   #Account address + 
+#   id: ID!
+# }
 
 # # # stores for USD calculations
 # type Bundle @entity {

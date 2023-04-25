@@ -2,6 +2,7 @@ import { ZERO_BD, ZERO_BI } from '../utils/constants'
 /* eslint-disable prefer-const */
 import { ethereum } from '@graphprotocol/graph-ts'
 import {
+  DayAccount,
   Pool,
   PoolDayData,
   UniswapDayData,
@@ -23,8 +24,33 @@ export function updateUniswapDayData(event: ethereum.Event): UniswapDayData {
     uniswapDayData.volumeUSD = ZERO_BD
     uniswapDayData.feesUSD = ZERO_BD
     uniswapDayData.txCount = ZERO_BI
+    uniswapDayData.uniqueUsersCount = 0
   }
+  
   uniswapDayData.save()
+
+  let walletAddr = event.transaction.from
+  
+  //check if such a data point exists
+  let todayAccountKey = dayID.toString()
+  .concat("-")
+  .concat(walletAddr.toHexString())
+  
+  let todayWallet = DayAccount.load(
+    todayAccountKey
+  )
+
+  if(!todayWallet){
+    todayWallet = new DayAccount(todayAccountKey)
+  }
+  if(todayWallet.count === 0){
+    uniswapDayData.uniqueUsersCount++
+  }
+  todayWallet.count += 1
+  todayWallet.dayId = dayID.toString()
+  todayWallet.addr = walletAddr.toHexString()
+  todayWallet.save()
+
   return uniswapDayData as UniswapDayData
 }
 
